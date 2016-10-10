@@ -1,0 +1,31 @@
+
+rm *.csv
+rm *.class
+/export/apps/jdk/JDK-1_8_0_40/bin/javac HTTest.java 
+
+#get stat
+./get.cgroup.sh $3
+
+# run java  ./runJava.sh  20g 1(thread) 30(seconds)
+/export/apps/jdk/JDK-1_8_0_40/bin/java -Xmx$1 -Xms$1 -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+AlwaysPreTouch -XX:+PrintGCApplicationStoppedTime -XX:+UseG1GC -Xloggc:gc.log HTTest $2  $3
+
+echo "done processing ---------"
+#  finished unit
+echo "finished unit"
+tail -n 1 finish*.csv > a.tmp
+./getfinish.py 
+rm a.tmp
+
+# latency
+tail -n 1 latency.* > a.tmp
+echo "total number of >50ms:"
+cat latency* | wc -l
+
+./getpercent.py
+rm a.tmp
+
+#cgroup stat
+echo "cfs period"
+cat cfs.out
+
+./getcfs.py
